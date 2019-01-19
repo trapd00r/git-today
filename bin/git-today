@@ -30,6 +30,8 @@ for my $project(glob("$dev_dir/*"), @additional_dirs) {
     for my $log_item(git::log qw(HEAD  --date=short --pretty=format:%cd¶%x00%s%x00)) {
       my($date, $commit) = split(/¶/, $log_item);
 
+      next if $date ne $today;
+
       # highlight any filename with an extension
       if($commit =~ m/^(\S+):\s+(.+)$/) {
         $commit = sprintf("%s: %s", ls_color($1), $2);
@@ -38,17 +40,15 @@ for my $project(glob("$dev_dir/*"), @additional_dirs) {
       # highlight any module name
       $commit =~ s/([A-Z_a-z][0-9A-Z_a-z]*::[0-9A-Z_a-z]+)/fg(196, $1)/e;
 
-      if($date eq $today) {
-        my ($basedir) = $project =~ m{.+/(.+)$};
-        printf("%s %-15s\n", $seen{$basedir}
-          ? ""
-          : fg(51, bg(30, bold(italic(underline($basedir))))) . "\n",
-            $commit
-          );
+      my ($basedir) = $project =~ m{.+/(.+)$};
+      printf("%s %-15s\n", $seen{$basedir}
+        ? ""
+        : fg(51, bg(30, bold(italic(underline($basedir))))) . "\n",
+          $commit
+        );
 
-        # only print the project name once
-        $seen{$basedir}++;
-      }
+      # only print the project name once
+      $seen{$basedir}++;
     }
   }
 }
