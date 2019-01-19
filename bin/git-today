@@ -1,0 +1,54 @@
+#!/usr/bin/perl
+# vim:ft=perl:et:
+# abstract: traverse dirs in $HOME/dev and tell me what I accomplished today
+
+package Git::today;
+
+our $VERSION = '0.02';
+
+use strict;
+use warnings;
+
+use POSIX               qw(strftime);
+use File::Basename      qw(dirname);
+use File::LsColor       qw(ls_color);
+use Term::ExtendedColor qw(fg bg bold italic underline);
+use Git::Sub;
+
+my $dev_dir         = "$ENV{HOME}/dev";
+my @additional_dirs = ("$ENV{HOME}/etc");
+
+my $today = strftime("%Y-%m-%d", localtime());
+
+my %seen = ();
+
+for my $project(glob("$dev_dir/*"), @additional_dirs) {
+  if(-d "$project/.git") {
+    chdir($project) or (warn $! and next);
+
+    # use a char that's certain to not be included in any commit msg
+    for my $log_item(git::log qw(HEAD  --date=short --pretty=format:%cd¶%x00%s%x00)) {
+      my($date, $commit) = split(/¶/, $log_item);
+
+      # highlight any filename with an extension
+      if($commit =~ m/^(\S+):\s+(.+)$/) {
+        $commit = sprintf("%s: %s", ls_color($1), $2);
+      }
+
+      # highlight any module name
+      $commit =~ s/([A-Z_a-z][0-9A-Z_a-z]*::[0-9A-Z_a-z]+)/fg(196, $1)/e;
+
+      if($date eq $today) {
+        my ($basedir) = $project =~ m{.+/(.+)$};
+        printf("%s %-15s\n", $seen{$basedir}
+          ? ""
+          : fg(51, bg(30, bold(italic(underline($basedir))))) . "\n",
+            $commit
+          );
+
+        # only print the project name once
+        $seen{$basedir}++;
+      }
+    }
+  }
+}
