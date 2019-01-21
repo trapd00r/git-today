@@ -4,7 +4,7 @@
 
 package Git::today;
 
-our $VERSION = '0.02';
+our $VERSION = '0.10';
 
 use strict;
 use warnings;
@@ -15,10 +15,12 @@ use File::LsColor       qw(ls_color);
 use Term::ExtendedColor qw(fg bg bold italic underline);
 use Git::Sub;
 
+
 my $dev_dir         = "$ENV{HOME}/dev";
-my @additional_dirs = ("$ENV{HOME}/etc");
+my @additional_dirs = ("$ENV{HOME}/etc", "$ENV{HOME}/dev/_upstream");
 
 my $today = strftime("%Y-%m-%d", localtime());
+$today = '2019-01-10';
 
 my %seen = ();
 
@@ -32,23 +34,54 @@ for my $project(glob("$dev_dir/*"), @additional_dirs) {
 
       next if $date ne $today;
 
-      # highlight any filename with an extension
+      my($subject, $msg);
       if($commit =~ m/^(\S+):\s+(.+)$/) {
-        $commit = sprintf("%s: %s", ls_color($1), $2);
+        ($subject, $msg) = ($1, $2);
+      }
+      else {
+        $subject = "";
+        $msg = "\b$commit";
       }
 
+
+#      # highlight any filename with an extension
+#      if($commit =~ m/^(\S+):\s+(.+)$/) {
+#        $commit = sprintf("%s: %s", ls_color($1), $2);
+#      }
+
       # highlight any module name
-      $commit =~ s/([A-Z_a-z][0-9A-Z_a-z]*::[0-9A-Z_a-z]+)/fg(196, $1)/e;
+#      $commit =~ s/([A-Z_a-z][0-9A-Z_a-z]*::[0-9A-Z_a-z]+)/fg(196, $1)/e;
 
       my ($basedir) = $project =~ m{.+/(.+)$};
-      printf("%s %-15s\n", $seen{$basedir}
+      printf("%s %s %s\n", $seen{$basedir}
         ? ""
-        : fg(51, bg(30, bold(italic(underline($basedir))))) . "\n",
-          $commit
+        : paint($basedir),
+          fg(35, bold(sprintf("%20.20s", $subject))), italic(fg(137, $msg)),
+#          fg(137, $subject),fg(35, sprintf("%20.20s", $msg)), 
+          
         );
 
       # only print the project name once
       $seen{$basedir}++;
     }
   }
+}
+
+
+sub paint {
+  my $data = shift;
+
+  my $len = length($data);
+  $len += 2;
+
+#< please don't look at this
+  return
+  sprintf "\t\t\t\b\b\b@{[fg(35, '╔')]}" . "@{[fg(137, '═')]}" x $len . "@{[fg(35, '╗')]}\n" .
+  sprintf qq/\t\t\t\b\b\b@{[fg(137, "║")]}@{[italic(bold(fg(35, " $data " )))]}@{[fg(137, "║")]}\n/ .
+  sprintf "\t\t\t\b\b\b@{[fg(35, '╚')]}" . "@{[fg(137, '═')]}" x $len . "@{[fg(35, '╝')]}\n";
+#>
+
+#  print  sprintf "╔═══════╗\n";
+#  print  sprintf "║ $data ║\n";
+#  print  sprintf "═══════\n";
 }
