@@ -70,15 +70,20 @@ for my $project(glob("$dev_dir/*"), @additional_dirs) {
 
 sub paint {
   my $data = shift;
+  $data = "$data.git";
 
   my $len = length($data);
   $len += 2;
 
 #< please don't look at this
   return
-  sprintf "\t\t\t\b\b\b@{[fg(35, '╔')]}" . "@{[fg(137, '═')]}" x $len . "@{[fg(35, '╗')]}\n" .
-  sprintf qq/\t\t\t\b\b\b@{[fg(137, "║")]}@{[italic(bold(fg(35, " $data " )))]}@{[fg(137, "║")]}\n/ .
-  sprintf "\t\t\t\b\b\b@{[fg(35, '╚')]}" . "@{[fg(137, '═')]}" x $len . "@{[fg(35, '╝')]}\n";
+  sprintf "\t\t\t\b\b\b@{[fg(107, '╔')]}" . "@{[fg(106, '═')]}" x $len . "@{[fg(107, '╗')]}\n" .
+  sprintf qq/\t\t\t\b\b\b@{[fg(107, "║")]}@{[italic(bold(fg(107, " $data " )))]}@{[fg(107, "║")]}\n/ .
+  sprintf "\t\t\t\b\b\b@{[fg(107, '╚')]}" . "@{[fg(106, '═')]}" x $len . "@{[fg(107, '╝')]}\n";
+
+#  sprintf "\t\t\t\b\b\b@{[fg(107, '▛')]}" . "@{[fg(106, '▔')]}" x $len . "@{[fg(107, '▜')]}\n" .
+#  sprintf qq/\t\t\t\b\b\b@{[fg(107, "▏")]}@{[italic(bold(fg(107, " $data " )))]}@{[fg(107, "▕")]}\n/ .
+#  sprintf "\t\t\t\b\b\b@{[fg(107, '▙')]}" . "@{[fg(106, '▁')]}" x $len . "@{[fg(107, '▟')]}\n";
 #>
 
 #  print  sprintf "╔═══════╗\n";
