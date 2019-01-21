@@ -20,7 +20,6 @@ my $dev_dir         = "$ENV{HOME}/dev";
 my @additional_dirs = ("$ENV{HOME}/etc", "$ENV{HOME}/dev/_upstream");
 
 my $today = strftime("%Y-%m-%d", localtime());
-$today = '2019-01-10';
 
 my %seen = ();
 
