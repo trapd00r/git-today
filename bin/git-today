@@ -4,7 +4,7 @@
 
 package Git::today;
 
-our $VERSION = '0.10';
+our $VERSION = '0.12';
 
 use strict;
 use warnings;
@@ -19,10 +19,16 @@ use Git::Sub;
 my $dev_dir         = "$ENV{HOME}/dev";
 my @additional_dirs = ("$ENV{HOME}/etc", "$ENV{HOME}/dev/_upstream");
 
-my $today = strftime("%Y-%m-%d", localtime());
+my $today = shift // strftime("%Y-%m-%d", localtime());
+
+if($today =~ m/-?-(?:h|help)/) {
+  print "Usage: $0 [%Y-%m-%d]\n";
+  exit;
+}
 
 my %seen = ();
 
+printf bold(sprintf("%33s\n", $today ));
 for my $project(glob("$dev_dir/*"), @additional_dirs) {
   if(-d "$project/.git") {
     chdir($project) or (warn $! and next);
@@ -42,6 +48,14 @@ for my $project(glob("$dev_dir/*"), @additional_dirs) {
         $msg = "\b$commit";
       }
 
+      if($seen{$msg}) {
+        $msg = '-';
+      }
+      else {
+       $msg .= "\n";
+       $seen{$msg}++; # = $basedir;
+      }
+
 
 #      # highlight any filename with an extension
 #      if($commit =~ m/^(\S+):\s+(.+)$/) {
@@ -52,7 +66,7 @@ for my $project(glob("$dev_dir/*"), @additional_dirs) {
 #      $commit =~ s/([A-Z_a-z][0-9A-Z_a-z]*::[0-9A-Z_a-z]+)/fg(196, $1)/e;
 
       my ($basedir) = $project =~ m{.+/(.+)$};
-      printf("%s %s %s\n", $seen{$basedir}
+      printf("%s %s %s", $seen{$basedir}
         ? ""
         : paint($basedir),
           fg(35, bold(sprintf("%20.20s", $subject))), italic(fg(137, $msg)),
