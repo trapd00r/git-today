@@ -26,7 +26,7 @@ WriteMakefile1(
   },
   META_ADD                     => {
     provides => {
-      'Git::today' => {
+      'App::Git::today' => {
         file => 'bin/git-today',
       },
     },
@@ -67,5 +67,3 @@ sub WriteMakefile1 {
 
   WriteMakefile(%params);
 }
-
-
